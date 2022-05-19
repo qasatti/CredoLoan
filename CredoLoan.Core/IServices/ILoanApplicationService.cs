@@ -1,14 +1,12 @@
 ﻿using CredoLoan.Core.Models;
-using CredoLoan.Core.SharedKernel;
 
 namespace CredoLoan.Core.Services
 {
     public interface ILoanApplicationService
     {
-        Task<ResponseResult<List<DetailLoanApplicationModel>>> List(string clientId);
-        Task<ResponseResult<DetailLoanApplicationModel>> Get(string id, string clientId);
-        Task<ResponseResult> Create(CreateLoanApplicationModel model);
-        Task<ResponseResult> Update(EditLoanApplicationModel model);
-
+        Task<List<DetailLoanApplicationResponseModel>> List(string clientId);
+        Task<DetailLoanApplicationResponseModel> Get(string id, string clientId);
+        Task<CreateLoanApplicationResponseModel> Create(CreateLoanApplicationModel model);
+        Task<EditLoanApplicationResponseModel> Update(EditLoanApplicationModel model);
     }
 }

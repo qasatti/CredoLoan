@@ -14,10 +14,4 @@ namespace CredoLoan.Api.ViewModels
 
         public LoanStatus LoanStatus { get; set; }
     }
-
-
-    public class EditLoanApplicationViewModel : CreateLoanApplicationViewModel
-    {
-        public string Id { get; set; }
-    }
 }

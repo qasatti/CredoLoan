@@ -11,6 +11,7 @@ using CredoLoan.Core.SharedKernel;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CredoLoan.Core.Extensions;
+using CredoLoan.Core.Exceptions;
 
 namespace CredoLoan.Infrastructure.Services
 {
@@ -32,87 +33,55 @@ namespace CredoLoan.Infrastructure.Services
             _jwtOptions = jwtOptions.Value;
             _mapper = mapper;
         }
-        public async Task<ResponseResult> SignUp(SignUpModel model)
+        public async Task<SignUpResponseModel> SignUp(SignUpModel model)
         {
-            try
+            var user = _mapper.Map<Client>(model);
+            var findPersonResult = await _credoCssService.FindPerson(user.PersonalNumber);
+            user.Name = findPersonResult.Result.FirstName;
+            user.SurName = findPersonResult.Result.LastName;
+            user.PersonalNumber = findPersonResult.Result.PersonalN;
+            user.DateOfBirth = findPersonResult.Result.BirthDate.ParseBirthDate();
+
+            var existingUser = await _clientUserManager.FindByNameAsync(model.UserName);
+            if (existingUser != null)
+                throw new BadRequestException(StringResources.UserNameAlreadyExists);
+
+            var createUserResult = await _clientUserManager.CreateAsync(user, model.Password);
+            if (!createUserResult.Succeeded)
+                throw new BadRequestException(createUserResult.Errors.FirstOrDefault()?.Description ?? StringResources.InternalErrorOccured);
+           
+            return new SignUpResponseModel
             {
-                var user = _mapper.Map<Client>(model);
-
-                var findPersonResult = await _credoCssService.FindPerson(user.PersonalNumber);
-
-                if (findPersonResult.IsError)
-                {
-                    return new ResponseResult($"Failed to find Person with following error: {findPersonResult.Message}", true);
-
-                }
-
-                user.Name = findPersonResult.Data.Result.FirstName;
-                user.SurName = findPersonResult.Data.Result.LastName;
-                user.PersonalNumber = findPersonResult.Data.Result.PersonalN;
-                user.DateOfBirth = findPersonResult.Data.Result.BirthDate.ParseBirthDate();
-
-                var existingUser = await _clientUserManager.FindByNameAsync(model.UserName);
-
-                if (existingUser != null)
-                {
-                    return new ResponseResult(StringResources.UserNameAlreadyExists, true);
-                }
-
-                var createUserResult = await _clientUserManager.CreateAsync(user, model.Password);
-
-                if (!createUserResult.Succeeded)
-                {
-                    return new ResponseResult(createUserResult.Errors.FirstOrDefault()?.Description ?? StringResources.InternalErrorOccured, true);
-                }
-                return new ResponseResult(StringResources.SuccessfullyCreated);
-
-            }
-            catch (Exception ex)
-            {
-                return new ResponseResult(ex.Message, true);
-            }
+                Id = user.Id
+            };
         }
-        public async Task<ResponseResult<AuthModel>> SignIn(SignInModel model)
+        public async Task<SignInResponseModel> SignIn(SignInModel model)
         {
-            try
-            {
-                var clientUser = await _clientUserManager.FindByNameAsync(model.UserName);
+            var clientUser = await _clientUserManager.FindByNameAsync(model.UserName);
+            if (clientUser == null)
+                throw new BadRequestException(StringResources.UserNameOrPasswordIncorrect);
 
-                if (clientUser == null)
-                {
-                    return new ResponseResult<AuthModel>(null, StringResources.UserNameOrPasswordIncorrect, true);
-                }
-                if (!await _clientUserManager.CheckPasswordAsync(clientUser, model.Password))
-                {
-                    return new ResponseResult<AuthModel>(null, StringResources.UserNameOrPasswordIncorrect, true);
-                }
+            if (!await _clientUserManager.CheckPasswordAsync(clientUser, model.Password))
+                throw new BadRequestException(StringResources.UserNameOrPasswordIncorrect);
 
-                var authClaims = new List<Claim>
+            var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, clientUser.Id),
                     new Claim(ClaimTypes.Name, clientUser.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
-                var token = GetToken(authClaims);
+            var token = GetToken(authClaims);
 
-                var authModel = new AuthModel
-                {
-                    AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
-                    ExpiresIn = token.ValidTo,
-                    Name = clientUser.Name,
-                    SurName = clientUser.SurName,
-                    UserName = clientUser.UserName,
-                    PersonalNumber = clientUser.PersonalNumber,
-                };
-
-                return new ResponseResult<AuthModel>(authModel);
-
-            }
-            catch (Exception ex)
+            return new SignInResponseModel
             {
-                return new ResponseResult<AuthModel>(null, ex.Message, true);
-            }
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                ExpiresIn = token.ValidTo,
+                Name = clientUser.Name,
+                SurName = clientUser.SurName,
+                UserName = clientUser.UserName,
+                PersonalNumber = clientUser.PersonalNumber,
+            };
         }
 
         private JwtSecurityToken GetToken(List<Claim> authClaims)

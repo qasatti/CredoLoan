@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using CredoLoan.Api.Extensions;
 using CredoLoan.Core.Services;
 using CredoLoan.Core.SharedKernel;
+using CredoLoan.Core.Models;
 
 namespace CredoLoan.Api.Controllers
 {
@@ -26,37 +27,18 @@ namespace CredoLoan.Api.Controllers
         public async Task<ActionResult> CssToken()
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
-            var result = await _credoCssService.CssAuthorize();
-
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return Ok(ResponseResult<string>.Success(await _credoCssService.CssAuthorize()));
         }
 
         [HttpGet(nameof(FindPerson))]
         public async Task<IActionResult> FindPerson(string personNumber)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
-            var result = await _credoCssService.FindPerson(personNumber);
-
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return Ok(ResponseResult<CssFindPersonResponseModel>.Success(await _credoCssService.FindPerson(personNumber)));
         }
     }
 }

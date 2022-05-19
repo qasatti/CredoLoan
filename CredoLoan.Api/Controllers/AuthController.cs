@@ -1,13 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using CredoLoan.Api.Extensions;
 using CredoLoan.Api.ViewModels;
 using CredoLoan.Core.Models;
 using CredoLoan.Core.Services;
 using CredoLoan.Core.SharedKernel;
+using CredoLoan.Infrastructure.Resources;
+
 
 namespace CredoLoan.Api.Controllers
 {
@@ -33,38 +32,18 @@ namespace CredoLoan.Api.Controllers
         public async Task<ActionResult> SignUp(SignUpViewModel model)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
-
-            var result = await _authService.SignUp(_mapper.Map<SignUpModel>(model));
-
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
+            
+            return Ok(ResponseResult<SignUpResponseModel>.Success(await _authService.SignUp(_mapper.Map<SignUpModel>(model))));
         }
 
         [HttpPost(nameof(SignIn))]
         public async Task<IActionResult> SignIn(SignInViewModel model)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
-            var result = await _authService.SignIn(_mapper.Map<SignInModel>(model));
-
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return Ok(ResponseResult<SignInResponseModel>.Success(await _authService.SignIn(_mapper.Map<SignInModel>(model))));
         }
 
     }

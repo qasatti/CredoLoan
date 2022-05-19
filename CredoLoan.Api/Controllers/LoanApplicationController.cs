@@ -7,6 +7,7 @@ using CredoLoan.Core.Models;
 using CredoLoan.Core.Services;
 using CredoLoan.Core.SharedKernel;
 using REaDConnect.Api.Extensions;
+using CredoLoan.Infrastructure.Resources;
 
 namespace CredoLoan.Api.Controllers
 {
@@ -33,77 +34,42 @@ namespace CredoLoan.Api.Controllers
         public async Task<IActionResult> Get()
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
-            var result = await _loanApplicationService.List(User.GetClientId());
-
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return Ok(ResponseResult<List<DetailLoanApplicationResponseModel>>.Success(await _loanApplicationService.List(User.GetClientId())));
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
-            var result = await _loanApplicationService.Get(id, User.GetClientId());
-
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return Ok(ResponseResult<DetailLoanApplicationResponseModel>.Success(await _loanApplicationService.Get(id, User.GetClientId())));
         }
 
         [HttpPost]
         public async Task<IActionResult> Post(CreateLoanApplicationViewModel model)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
             var createModel = _mapper.Map<CreateLoanApplicationModel>(model);
             createModel.AppliedById = User.GetClientId();
-            var result = await _loanApplicationService.Create(createModel);
 
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return Ok(ResponseResult<CreateLoanApplicationResponseModel>.Success(await _loanApplicationService.Create(createModel)));
         }
 
         [HttpPut]
         public async Task<IActionResult> Put(EditLoanApplicationViewModel model)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new ResponseResult(ModelState.GetErrors()));
-            }
+                return BadRequest(ResponseResult.Failure(ModelState.GetErrors()));
 
             var editModel = _mapper.Map<EditLoanApplicationModel>(model);
             editModel.AppliedById = User.GetClientId();
-            var result = await _loanApplicationService.Update(editModel);
 
-            if (result.IsError)
-            {
-                _logger.LogError(result.Message);
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return Ok(ResponseResult<EditLoanApplicationResponseModel>.Success(await _loanApplicationService.Update(editModel)));
         }
     }
 }

@@ -22,7 +22,7 @@ namespace CredoLoan.Infrastructure.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class StringResources {
+    public class StringResources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace CredoLoan.Infrastructure.Resources {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CredoLoan.Infrastructure.Resources.StringResources", typeof(StringResources).Assembly);
@@ -51,7 +51,7 @@ namespace CredoLoan.Infrastructure.Resources {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,9 +61,27 @@ namespace CredoLoan.Infrastructure.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error in Css Api to find person.
+        /// </summary>
+        public static string ErrorCssFindPerson {
+            get {
+                return ResourceManager.GetString("ErrorCssFindPerson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error in Css Api to get token.
+        /// </summary>
+        public static string ErrorCssToken {
+            get {
+                return ResourceManager.GetString("ErrorCssToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Internal Error Occured.
         /// </summary>
-        internal static string InternalErrorOccured {
+        public static string InternalErrorOccured {
             get {
                 return ResourceManager.GetString("InternalErrorOccured", resourceCulture);
             }
@@ -72,7 +90,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Approved/Negative loan are not allowed to update.
         /// </summary>
-        internal static string LoanEditNotAlowed {
+        public static string LoanEditNotAlowed {
             get {
                 return ResourceManager.GetString("LoanEditNotAlowed", resourceCulture);
             }
@@ -81,7 +99,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to No record found.
         /// </summary>
-        internal static string RecordNotFound {
+        public static string RecordNotFound {
             get {
                 return ResourceManager.GetString("RecordNotFound", resourceCulture);
             }
@@ -90,7 +108,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Successfully Created : წარმატებით შეიქმნა.
         /// </summary>
-        internal static string SuccessfullyCreated {
+        public static string SuccessfullyCreated {
             get {
                 return ResourceManager.GetString("SuccessfullyCreated", resourceCulture);
             }
@@ -99,7 +117,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Successfully Updated: წარმატებით განახლდა.
         /// </summary>
-        internal static string SuccessfullyUpdated {
+        public static string SuccessfullyUpdated {
             get {
                 return ResourceManager.GetString("SuccessfullyUpdated", resourceCulture);
             }
@@ -108,7 +126,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to User name already Exists.
         /// </summary>
-        internal static string UserNameAlreadyExists {
+        public static string UserNameAlreadyExists {
             get {
                 return ResourceManager.GetString("UserNameAlreadyExists", resourceCulture);
             }
@@ -117,7 +135,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Username and password are incorrect : ომხმარებლის სახელი და პაროლი არასწორია.
         /// </summary>
-        internal static string UserNameOrPasswordIncorrect {
+        public static string UserNameOrPasswordIncorrect {
             get {
                 return ResourceManager.GetString("UserNameOrPasswordIncorrect", resourceCulture);
             }
@@ -126,7 +144,7 @@ namespace CredoLoan.Infrastructure.Resources {
         /// <summary>
         ///   Looks up a localized string similar to User Not found : მომხმარებელი არ მოიძებნა.
         /// </summary>
-        internal static string UserNotExists {
+        public static string UserNotExists {
             get {
                 return ResourceManager.GetString("UserNotExists", resourceCulture);
             }

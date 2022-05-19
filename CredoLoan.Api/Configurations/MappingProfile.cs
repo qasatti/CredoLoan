@@ -18,7 +18,7 @@ namespace CredoLoan.Api.Configurations
             CreateMap<EditLoanApplicationViewModel, EditLoanApplicationModel>();
             CreateMap<EditLoanApplicationModel, LoanApplication>();
 
-            CreateMap<LoanApplication, DetailLoanApplicationModel>()
+            CreateMap<LoanApplication, DetailLoanApplicationResponseModel>()
                 .ForMember(dest => dest.AppliedByClientId, opt => opt.MapFrom(src => src.AppliedBy.Id))
                 .ForMember(dest => dest.AppliedByClientUserName, opt => opt.MapFrom(src => src.AppliedBy.UserName));
 

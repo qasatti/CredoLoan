@@ -3,9 +3,9 @@ using CredoLoan.Core.Models;
 using CredoLoan.Core.Services;
 using CredoLoan.Data.Entities;
 using CredoLoan.Infrastructure.Resources;
-using CredoLoan.Core.SharedKernel;
 using CredoLoan.Data.IRepositories;
 using Microsoft.EntityFrameworkCore;
+using CredoLoan.Core.Exceptions;
 
 namespace CredoLoan.Infrastructure.Services
 {
@@ -26,95 +26,71 @@ namespace CredoLoan.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseResult<List<DetailLoanApplicationModel>>> List(string clientId)
+        public async Task<List<DetailLoanApplicationResponseModel>> List(string clientId)
         {
-            try
-            {
-                var entities = await _loanApplicationRepository.GetAll()
+            var entities = await _loanApplicationRepository.GetAll()
                       .AsNoTracking()
                       .Include(x => x.AppliedBy)
-                      .Where(x => x.AppliedBy.Id==clientId)
+                      .Where(x => x.AppliedBy.Id == clientId)
                       .ToListAsync();
+            if (entities.Count == 0)
+                throw new NotFoundException(StringResources.RecordNotFound);
 
-                return new ResponseResult<List<DetailLoanApplicationModel>>(_mapper.Map<List<DetailLoanApplicationModel>>(entities));
-            }
-            catch (Exception ex)
-            {
-                return new ResponseResult<List<DetailLoanApplicationModel>>(null, ex.Message, true);
-            }
+            return _mapper.Map<List<DetailLoanApplicationResponseModel>>(entities);
+
         }
 
-        public async Task<ResponseResult<DetailLoanApplicationModel>> Get(string id, string clientId)
+        public async Task<DetailLoanApplicationResponseModel> Get(string id, string clientId)
         {
-            try
-            {
-                var entity = await _loanApplicationRepository.GetById(id)
+            var entity = await _loanApplicationRepository.GetById(id)
                       .AsNoTracking()
                       .Include(x => x.AppliedBy)
                       .Where(x => x.Id.Equals(id) && x.AppliedBy.Id.Equals(clientId))
                       .FirstOrDefaultAsync();
+            if (entity == null)
+                throw new NotFoundException(StringResources.RecordNotFound);
 
-                if (entity == null)
-                {
-                    return new ResponseResult<DetailLoanApplicationModel>(null,StringResources.RecordNotFound, true);
-
-                }
-                return new ResponseResult<DetailLoanApplicationModel>(_mapper.Map<DetailLoanApplicationModel>(entity));
-            }
-            catch (Exception ex)
-            {
-                return new ResponseResult<DetailLoanApplicationModel>(null, ex.Message, true);
-            }
+            return _mapper.Map<DetailLoanApplicationResponseModel>(entity);
         }
 
-        public async Task<ResponseResult> Create(CreateLoanApplicationModel model)
+        public async Task<CreateLoanApplicationResponseModel> Create(CreateLoanApplicationModel model)
         {
-            try
-            {
-                var currentClient = await _userRepository.GetById(model.AppliedById).FirstOrDefaultAsync();
+            var currentClient = await _userRepository.GetById(model.AppliedById).FirstOrDefaultAsync();
+            if (currentClient == null)
+                throw new BadRequestException(StringResources.UserNotExists);
 
-                var entity = _mapper.Map<LoanApplication>(model);
-                entity.AppliedBy = currentClient;
+            var entity = _mapper.Map<LoanApplication>(model);
+            entity.AppliedBy = currentClient;
 
-                await _loanApplicationRepository.Create(entity);
-                return new ResponseResult(StringResources.SuccessfullyCreated);
-            }
-            catch (Exception ex)
+            return new CreateLoanApplicationResponseModel
             {
-                return new ResponseResult(ex.Message, true);
-            }
+                Id = await _loanApplicationRepository.Create(entity)
+            };
         }
 
-        public async Task<ResponseResult> Update(EditLoanApplicationModel model)
-        { 
-            try
-            {
-                var entity = await _loanApplicationRepository.GetById(model.Id)
+        public async Task<EditLoanApplicationResponseModel> Update(EditLoanApplicationModel model)
+        {
+            var entity = await _loanApplicationRepository.GetById(model.Id)
                     .Include(x => x.AppliedBy)
-                    .Where(x =>  x.AppliedBy.Id.Equals(model.AppliedById))
+                    .Where(x => x.AppliedBy.Id.Equals(model.AppliedById))
                     .FirstOrDefaultAsync();
-                if (entity == null)
-                {
-                    return new ResponseResult(StringResources.RecordNotFound, true);
+            if (entity == null)
+                throw new NotFoundException(StringResources.RecordNotFound);
+            if (entity.LoanStatus == Core.Enums.LoanStatus.Approved ||
+                entity.LoanStatus == Core.Enums.LoanStatus.Rejected)
+                throw new BadRequestException(StringResources.LoanEditNotAlowed);
 
-                }
-                if (entity.LoanStatus == Core.Enums.LoanStatus.Approved || entity.Amount < 0)
-                {
-                    return new ResponseResult(StringResources.LoanEditNotAlowed, true);
-                }
+            entity.Amount = model.Amount;
+            entity.Currency = model.Currency;
+            entity.LoanStatus = model.LoanStatus;
+            entity.Period = model.Period;
+            entity.LoanType = model.LoanType;
+            await _loanApplicationRepository.Update(entity);
 
-                entity.Amount = model.Amount;
-                entity.Currency = model.Currency;
-                entity.LoanStatus = model.LoanStatus;
-                entity.Period = model.Period;
-                entity.LoanType = model.LoanType;
-                await _loanApplicationRepository.Update(entity);
-                return new ResponseResult(StringResources.SuccessfullyUpdated);
-            }
-            catch (Exception ex)
+            return new EditLoanApplicationResponseModel
             {
-                return new ResponseResult(ex.Message, true);
-            }
+                Id = entity.Id
+            };
         }
 
     }

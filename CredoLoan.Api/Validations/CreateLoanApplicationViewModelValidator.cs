@@ -7,8 +7,8 @@ namespace CredoLoan.Api.Validations
     {
         public CreateLoanApplicationViewModelValidator()
         {
-            RuleFor(x => x.LoanType).NotEmpty();
-            RuleFor(x => x.LoanStatus).NotEmpty();
+            RuleFor(x => x.LoanType).NotEmpty().IsInEnum();
+            RuleFor(x => x.LoanStatus).NotEmpty().IsInEnum();
             RuleFor(x => x.Currency).NotEmpty();
             RuleFor(x => x.Period).NotEmpty();
         }

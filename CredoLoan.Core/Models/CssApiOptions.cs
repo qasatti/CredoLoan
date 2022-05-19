@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace CredoLoan.Core.Models
+﻿namespace CredoLoan.Core.Models
 {
     public class CssApiOptions
     {

@@ -1,12 +1,11 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using CredoLoan.Core.Models;
 using CredoLoan.Core.Services;
 using CredoLoan.Infrastructure.Resources;
-using CredoLoan.Core.SharedKernel;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using CredoLoan.Core.Exceptions;
 
 namespace CredoLoan.Infrastructure.Services
 {
@@ -19,30 +18,13 @@ namespace CredoLoan.Infrastructure.Services
         {
             _cssApiOptions = cssApiOptions.Value;
         }
-        public async Task<ResponseResult<CssFindPersonResponseModel>> FindPerson(string personNumber)
+        public async Task<CssFindPersonResponseModel> FindPerson(string personNumber)
         {
-            try
-            {
-                var response = await FindPersonCall(personNumber);
-                return new ResponseResult<CssFindPersonResponseModel>(response);
-            }
-            catch (Exception ex)
-            {
-                return new ResponseResult<CssFindPersonResponseModel>(null, $"{StringResources.InternalErrorOccured}: {ex.Message}", true);
-            }
-
+            return await FindPersonCall(personNumber);
         }
-        public async Task<ResponseResult> CssAuthorize()
+        public async Task<string> CssAuthorize()
         {
-            try
-            {
-                var response = await AuthorizeCall();
-                return new ResponseResult<string>(response);
-            }
-            catch (Exception ex)
-            {
-                return new ResponseResult($"{StringResources.InternalErrorOccured}: {ex.Message}", true);
-            }
+            return await AuthorizeCall();
         }
 
         private async Task<CssFindPersonResponseModel> FindPersonCall(string personNumber)
@@ -57,12 +39,11 @@ namespace CredoLoan.Infrastructure.Services
             };
             var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
             var response = await client.PostAsync(uri, content);
-
             if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Issue finding person");
-            }
+                throw new BadRequestException(StringResources.ErrorCssFindPerson);
+
             var findPersonResponse = JsonConvert.DeserializeObject<CssFindPersonResponseModel>(await response.Content.ReadAsStringAsync());
+            
             return findPersonResponse;
 
         }
@@ -82,10 +63,10 @@ namespace CredoLoan.Infrastructure.Services
 
             var response = await client.PostAsync(uri, new FormUrlEncodedContent(data));
             if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Issue in getting token");
-            }
+                throw new BadRequestException(StringResources.ErrorCssToken);
+
             var authResponse = JsonConvert.DeserializeObject<CssAuthResponseModel>(await response.Content.ReadAsStringAsync());
+            
             return authResponse.AccessToken;
         }
     }

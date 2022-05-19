@@ -1,4 +1,5 @@
 using CredoLoan.Api.Configurations;
+using CredoLoan.Api.Middleware;
 using CredoLoan.Api.Validations;
 using CredoLoan.Api.ViewModels;
 using CredoLoan.Core.Models;
@@ -134,6 +135,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.MapControllers();
 
